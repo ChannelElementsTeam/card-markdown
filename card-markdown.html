@@ -1,0 +1,177 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+
+<dom-module id="card-markdown-composer">
+  <template>
+    <style>
+      .container {
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        -ms-flex-direction: row;
+        -webkit-flex-direction: row;
+        flex-direction: row;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+        padding: 10px 3px;
+      }
+
+      .flex {
+        -ms-flex: 1 1 0.000000001px;
+        -webkit-flex: 1;
+        flex: 1;
+        -webkit-flex-basis: 0.000000001px;
+        flex-basis: 0.000000001px;
+      }
+
+      .buttonPanel {
+        padding-left: 15px;
+      }
+
+      input {
+        outline: none;
+        width: 100%;
+        box-sizing: border-box;
+        border: none;
+        border-bottom: 3px solid #e5e5e5;
+        background: transparent;
+        font-size: 16px;
+        font-weight: 300;
+        font-family: "Roboto", sans-serif;
+        padding: 10px 5px;
+        color: #000;
+      }
+
+      .tabPage {
+        border: 1px solid #ccc;
+        height: 200px;
+        padding: 4px;
+        position: relative;
+        overflow-y: scroll;
+      }
+
+      #markdownTab {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      #markdown {
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        resize: none;
+        border: 0;
+        font-size: 14px;
+      }
+    </style>
+    <div class="container">
+      <div class="flex" style="position: relative;">
+        <div class="tabPage">
+          <div id="markdownTab">
+            <textarea id="markdown" placeholder="Enter markdown here"></textarea>
+          </div>
+          <div id="previewTab">
+            <div id="preview"></div>
+          </div>
+        </div>
+        <paper-tabs id="tabs" on-selected-changed="onTabChanged" scrollable align-bottom>
+          <paper-tab>markdown</paper-tab>
+          <paper-tab>preview</paper-tab>
+        </paper-tabs>
+      </div>
+      <div class="buttonPanel">
+        <paper-button on-click="onSend" raised>Send</button>
+      </div>
+    </div>
+  </template>
+  <script src="../showdown/dist/showdown.js"></script>
+  <script>
+    class CardMarkdownComposer extends Polymer.Element {
+      static get is() { return 'card-markdown-composer'; }
+      static get properties() {
+        return {
+          channel: Object
+        };
+      }
+      constructor() {
+        super();
+        this.converter = new showdown.Converter();
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        this.reset();
+      }
+      reset() {
+        this.$.markdown.value = "";
+        this.$.markdownTab.style.display = '';
+        this.$.previewTab.style.display = 'none';
+        this.$.tabs.select(0);
+      }
+      onTabChanged() {
+        if (this.$.tabs.selected == 0) {
+          this.$.markdownTab.style.display = '';
+          this.$.previewTab.style.display = 'none';
+        } else {
+          const preview = this.converter.makeHtml(this.$.markdown.value);
+          this.$.markdownTab.style.display = 'none';
+          this.$.previewTab.style.display = '';
+          this.$.preview.innerHTML = preview;
+        }
+      }
+      onSend() {
+        const message = this.$.markdown.value.trim();
+        if (message.length > 0) {
+          this.channel.sendCard(this, { json: { markdown: markdown } }, true, false);
+          this.reset();
+        }
+      }
+    }
+    window.customElements.define(CardMarkdownComposer.is, CardMarkdownComposer);
+  </script>
+</dom-module>
+
+<dom-module id="card-markdown-viewer">
+  <template>
+    <style>
+      .card {
+        border: 1px solid #ccc;
+        padding: 4px;
+      }
+    </style>
+    <div>
+      <div class="card">
+        <div id="contents"></div>
+      </div>
+    </div>
+  </template>
+  <script src="../showdown/dist/showdown.js"></script>
+  <script>
+    class CardMarkdownViewer extends Polymer.Element {
+      static get is() { return 'card-markdown-viewer'; }
+      static get properties() {
+        return {
+          data: Object,
+          channel: Object
+        };
+      }
+      constructor() {
+        super();
+        this.converter = new showdown.Converter();
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        this.data = {};
+        this.data.markdown = "# Hello World\n\nThis is **great**!";
+        const markup = this.converter.makeHtml(this.data.markdown);
+        this.$.contents.innerHTML = markup;
+      }
+    }
+    window.customElements.define(CardMarkdownViewer.is, CardMarkdownViewer);
+  </script>
+</dom-module>
