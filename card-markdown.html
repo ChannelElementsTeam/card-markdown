@@ -125,8 +125,8 @@
         }
       }
       onSend() {
-        const message = this.$.markdown.value.trim();
-        if (message.length > 0) {
+        const markdown = this.$.markdown.value.trim();
+        if (markdown.length > 0) {
           this.channel.sendCard(this, { json: { markdown: markdown } }, true, false);
           this.reset();
         }
@@ -166,8 +166,6 @@
       }
       connectedCallback() {
         super.connectedCallback();
-        this.data = {};
-        this.data.markdown = "# Hello World\n\nThis is **great**!";
         const markup = this.converter.makeHtml(this.data.markdown);
         this.$.contents.innerHTML = markup;
       }
