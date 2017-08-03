@@ -47,7 +47,7 @@
 
       .tabPage {
         border: 1px solid #ccc;
-        height: 200px;
+        height: 125px;
         padding: 4px;
         position: relative;
         overflow-y: scroll;
@@ -139,9 +139,12 @@
 <dom-module id="card-markdown-viewer">
   <template>
     <style>
-      .card {
-        border: 1px solid #ccc;
-        padding: 4px;
+      p {
+        margin: 0;
+      }
+
+      p+p {
+        margin-top: 1em;
       }
     </style>
     <div>
